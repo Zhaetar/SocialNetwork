@@ -128,6 +128,30 @@ public class User {
 			}
 		}
    	}
+   public void createFriendship() throws InterruptedException, ParseException {
+	   Scanner scanner = new Scanner(System.in);
+	   System.out.println("Digite o email do amigo: ");
+	   String friendEmail = scanner.next();
+	   Statement statement = null;
+	   Connection connection = BDConexao.conectar();
+	   if(friendEmail == "") {
+		   //todo error
+	   }
+	try {
+		statement = connection.createStatement();
+		String query;
+		query = "INSERT INTO amigos VALUES("+this.email+", "+friendEmail+","+this.birthDate+");"; //to-do consertar a data
+		statement.execute(query);
+		statement.close();
+		connection.close();
+		System.out.println("Amigo adicionado com sucesso!");
+	} catch (Exception e) {
+		System.out.println(e);
+		System.out.println("\nErro ao adicionar amigo! Voltando ao menu..");
+			TimeUnit.SECONDS.sleep(1);
+			Interface.init();
+		}
+   }
    
    public void buscarAmigosPrimeiroGrau(String email) throws InterruptedException {
    	Scanner scanner = new Scanner(System.in);
