@@ -128,6 +128,7 @@ public class User {
 			}
 		}
    	}
+   
    public void createFriendship() throws InterruptedException, ParseException {
 	   Scanner scanner = new Scanner(System.in);
 	   System.out.println("Digite o email do amigo: ");
@@ -153,17 +154,15 @@ public class User {
 		}
    }
    
-   public void buscarAmigosPrimeiroGrau(String email) throws InterruptedException {
-   	Scanner scanner = new Scanner(System.in);
+   public void buscarAmigos() throws InterruptedException {
    		Statement stmt = null;
    		Connection c = BDConexao.conectar();
    		try {
    			stmt = c.createStatement();		
    			String query = "SELECT * "
-   					+ "FROM amigos "
-   					+ "WHERE idAmigo IN "
-   					+ "(SELECT  idAmigo from pessoas where email +  = " + this.email + " ) "
-   							+ "AND grauamizade = '1'";
+		   					+ "FROM amigos "
+		   					+ "WHERE amigo2 IN "
+		   					+ "(SELECT amigo2 from amizades where amigo1 = "+this.email+") ";
    			stmt.execute(query);
    			stmt.close();
    			c.close();			
@@ -177,7 +176,7 @@ public class User {
    				e1.printStackTrace();
    			}
    		}
-      }
+   }
 
    public String getName() {
        return name;

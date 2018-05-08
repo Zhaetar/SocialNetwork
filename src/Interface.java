@@ -8,10 +8,11 @@ import java.util.Scanner;
 public class Interface {
 	public static void init() throws InterruptedException, ParseException {
 		System.out.println("\n Rede Social ");
-		System.out.println("1-  Alteracao de Dados de Pessoa:");                              
-		System.out.println("2 - Remocao de Amizades \n"); 
-		System.out.println("3-  Remocao de Pessoas ");	
-		System.out.println("4-  Buscar todos os amigos de primeiro grau uma pessoa");
+		System.out.println("1-  Criação de usuário");  
+		System.out.println("2-  Alteracao de dados de usuário");                              
+		System.out.println("3 - Remocao de amizades"); 
+		System.out.println("4-  Remocao de pessoas");	
+		System.out.println("5-  Buscar todos os amigos de primeiro grau de uma pessoa");
 		System.out.println("0 - Sair do Programa");
 
 		Scanner scanner = new Scanner(System.in);
