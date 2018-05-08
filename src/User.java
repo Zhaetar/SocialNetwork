@@ -22,14 +22,44 @@ public class User {
    protected String birthTown;
    protected String livingTown;
   
-   public User(String name, String email, String birthTown, String livingTown/*, Date birthDate*/) {
-     this.name= name;
-     this.email = email;
-     this.birthTown = birthTown;
-     this.livingTown = livingTown;
-     //this.birthDate = birthDate;
+   public User(String email) {
+	 this.setEmail(email);
     }
+   
+   public update(String name, String email, String birthTown, String livingTown, Date birthDate ) {
+	   if(newEmail!="" && newEmail!=null)
+		   this.setEmail(email);
+	   if(newName!="" && newName!=null)
+		   this.setName(name);
+	   if(newBirthTown!="" && newBirthTown!=null)
+		   this.setBirthTown(birthDate);
+	   if(newLivingTown!="" && newLivingTown!=null)
+		   this.setLivingTown(livingTown);
+	   if(newBirthDate!=null)
+		   this.setBirthDate(birthDate);
 
+	   Statement statement = null;
+	   Connection connection = BDConexao.conectar();
+		
+	   try {
+		   statement = connection.createStatement();
+		   String query;
+		   query = "UPDATE pessoa SET email = " + this.email + "," + "cidadeNasc ='" + this.birthTown + "',"
+					+ "dataNasc ='" + this.birthDate + "'," + "cidadeResidencia="
+					+ this.livingTown + "'," + "nome="+ this.name;
+		
+		   statement.execute(query);
+		   statement.close();
+		   connection.close();
+		   System.out.println("Pessoa alterada com sucesso!");
+		} catch (Exception e) {
+				System.out.println(e);
+				System.out.println("\nErro ao alterar dados do usuario! Voltando ao menu..");
+				TimeUnit.SECONDS.sleep(1);
+				Interface.init();
+		}
+    }
+   
    public void insert() throws InterruptedException, ParseException {
 	   Statement statement = null;
 		Connection connection = BDConexao.conectar();
@@ -38,7 +68,7 @@ public class User {
 			statement = connection.createStatement();
 			String query;
 			query = "INSERT INTO pessoas VALUES("+this.name+","+this.email+","
-					+ ""+this.birthDate+","+this.birthTown+");";
+					+ ""+this.birthDate+","+this.birthTown+","+this.livingTown+");";
 
 			statement.execute(query);
 			statement.close();
@@ -52,57 +82,27 @@ public class User {
 		}
    }
    
-   public void update() throws InterruptedException, ParseException {
+   public void updateText() throws InterruptedException, ParseException {
 		Scanner scanner = new Scanner(System.in);
 		
 		System.out.println("Digite o novo email (deixe em branco caso não queira alterar): ");
 		String newEmail = scanner.next();
-		if(newEmail!="" && newEmail!=null)
-			setEmail(newEmail);
 
 		System.out.println("Digite o novo nome (deixe em branco caso não queira alterar): ");
 		String newName = scanner.next();
-		if(newName!="" && newName!=null)
-			setName(newName);
-
+		
 		System.out.println("Digite a nova Cidade de Nascimento (deixe em branco caso não queira alterar): ");
 		String newBirthTown = scanner.next();
-		if(newBirthTown!="" && newBirthTown!=null)
-			setBirthTown(newBirthTown);
-
+		
 		System.out.println("Digite a nova Cidade de Residencia (deixe em branco caso não queira alterar): ");
 		String newLivingTown = scanner.next();
-		if(newLivingTown!="" && newLivingTown!=null)
-			setLivingTown(newLivingTown);
-
+		
 		System.out.println("Digite a nova Data de Nascimento (deixe em branco caso não queira alterar): ");
 		String dataNasc = scanner.next();
         DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");  
         Date newBirthDate = dateFormat.parse(dataNasc);
-		if(newBirthDate!=null)
-			setBirthDate(newBirthDate);
-
-        Statement statement = null;
-		Connection connection = BDConexao.conectar();
-
-		try {
-			statement = connection.createStatement();
-			String query;
-			query = "UPDATE pessoa SET email = " + this.email + "," + "cidadeNasc ='" + this.birthTown + "',"
-					+ "dataNasc ='" + this.birthDate + "'," + "cidadeResidencia="
-					+ this.livingTown + "'," + "nome="+ this.name;
-
-			statement.execute(query);
-			statement.close();
-			connection.close();
-			System.out.println("Pessoa alterada com sucesso!");
-		} catch (Exception e) {
-			System.out.println(e);
-			System.out
-					.println("\nErro ao alterar dados do usuario! Voltando ao menu..");
-			TimeUnit.SECONDS.sleep(1);
-			Interface.init();
-		}
+		
+        this.update(newName, newEmail, newBirthTown, newLivingTown, newBirthDate);
 
 	}
 
@@ -111,7 +111,7 @@ public class User {
 		Connection connection = BDConexao.conectar();
 		try {
 			statement = connection.createStatement();
-			String query = "DELETE FROM pessoa WHERE " + "email = " + this.email + "";
+			String query = "DELETE FROM pessoas WHERE " + "email = " + this.email + "";
 			statement.execute(query);
 			statement.close();
 			connection.close();
@@ -141,7 +141,10 @@ public class User {
 	try {
 		statement = connection.createStatement();
 		String query;
-		query = "INSERT INTO amigos VALUES("+this.email+", "+friendEmail+","+this.birthDate+");"; //to-do consertar a data
+		//Cria data atual para colocar na amizade
+		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd");
+		LocalDate localDate = LocalDate.now(); 
+		query = "INSERT INTO amigos VALUES("+this.email+", "+friendEmail+","+dtf.format(localDate)+");"; //to-do consertar a data
 		statement.execute(query);
 		statement.close();
 		connection.close();
@@ -149,6 +152,31 @@ public class User {
 	} catch (Exception e) {
 		System.out.println(e);
 		System.out.println("\nErro ao adicionar amigo! Voltando ao menu..");
+			TimeUnit.SECONDS.sleep(1);
+			Interface.init();
+		}
+   }
+   
+   public void deleteFriendship() throws InterruptedException, ParseException {
+	   Scanner scanner = new Scanner(System.in);
+	   System.out.println("Digite o email do amigo a ser deletado: ");
+	   String friendEmail = scanner.next();
+	   Statement statement = null;
+	   Connection connection = BDConexao.conectar();
+	   if(friendEmail == "") {
+		   //todo error
+	   }
+	try {
+		statement = connection.createStatement();
+		String query;
+		query = "DELETE FROM amigos WHERE amigo1 = '"+this.email+"' AND amigo2 = '"+friendEmail+"');"; 
+		statement.execute(query);
+		statement.close();
+		connection.close();
+		System.out.println("Amigo deletado com sucesso!");
+	} catch (Exception e) {
+		System.out.println(e);
+		System.out.println("\nErro ao deletar o amigo! Voltando ao menu..");
 			TimeUnit.SECONDS.sleep(1);
 			Interface.init();
 		}
