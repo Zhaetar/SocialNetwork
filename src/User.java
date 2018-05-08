@@ -82,29 +82,7 @@ public class User {
 		}
    }
    
-   public void updateText() throws InterruptedException, ParseException {
-		Scanner scanner = new Scanner(System.in);
-		
-		System.out.println("Digite o novo email (deixe em branco caso não queira alterar): ");
-		String newEmail = scanner.next();
-
-		System.out.println("Digite o novo nome (deixe em branco caso não queira alterar): ");
-		String newName = scanner.next();
-		
-		System.out.println("Digite a nova Cidade de Nascimento (deixe em branco caso não queira alterar): ");
-		String newBirthTown = scanner.next();
-		
-		System.out.println("Digite a nova Cidade de Residencia (deixe em branco caso não queira alterar): ");
-		String newLivingTown = scanner.next();
-		
-		System.out.println("Digite a nova Data de Nascimento (deixe em branco caso não queira alterar): ");
-		String dataNasc = scanner.next();
-        DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");  
-        Date newBirthDate = dateFormat.parse(dataNasc);
-		
-        this.update(newName, newEmail, newBirthTown, newLivingTown, newBirthDate);
-
-	}
+   
 
    public void delete() throws InterruptedException {
 		Statement statement = null;
