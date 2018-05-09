@@ -1,13 +1,9 @@
-import java.beans.Statement;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.text.DateFormat;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.Scanner;
-import java.util.concurrent.TimeUnit;
-
-import com.sun.corba.se.pept.transport.Connection;
 
 public class SocialNetwork {
 
@@ -15,7 +11,7 @@ public class SocialNetwork {
         // TODO code application logic here
     }
     
-    public void createUser() throws InterruptedException, ParseException{
+    public void createUser() throws InterruptedException, ParseException, SQLException{
     	Scanner scanner = new Scanner(System.in);
 		System.out.println("Digite o email: ");
 		String email = scanner.next();
@@ -26,77 +22,136 @@ public class SocialNetwork {
 		System.out.println("Digite a Cidade de Residencia: ");
 		String livingTown = scanner.next();
 		System.out.println("Digite a Data de Nascimento (dd/MM/yyyy): ");
-		String dataNasc = scanner.next();
-        DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");  
-        Date birthDate = dateFormat.parse(dataNasc);
+		String birthDate = scanner.next();
 
         User user = new User(email);
-        user.update(name, email, birthDate, birthTown, livingTown);
         user.insert();
+        user.update(name, email, birthTown, livingTown, birthDate);
 		Interface.init();
 	}
     
-    public void updateUser() throws InterruptedException, ParseException {
+    public void updateUser() throws InterruptedException, ParseException, SQLException {
     	String email = getEmail();
-    	user = getUser(email);
-		
-		System.out.println("Digite o novo email (deixe em branco caso não queira alterar): ");
-		String newEmail = scanner.next();
+    	User user = getUser(email);
+    	int exit = 0;
+    	Scanner scanner = new Scanner(System.in);
 
-		System.out.println("Digite o novo nome (deixe em branco caso não queira alterar): ");
-		String newName = scanner.next();
-		
-		System.out.println("Digite a nova Cidade de Nascimento (deixe em branco caso não queira alterar): ");
-		String newBirthTown = scanner.next();
-		
-		System.out.println("Digite a nova Cidade de Residencia (deixe em branco caso não queira alterar): ");
-		String newLivingTown = scanner.next();
-		
-		System.out.println("Digite a nova Data de Nascimento (deixe em branco caso não queira alterar): ");
-		String dataNasc = scanner.next();
-        DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");  
-        Date newBirthDate = dateFormat.parse(dataNasc);
-		
+    	String newEmail = user.getEmail();
+    	String newName = user.getName();
+    	String newBirthTown = user.getBirthTown();
+    	String newLivingTown = user.getLivingTown();
+    	String newBirthDate = user.getBirthDate();
+    	
+    	while(exit!=1) {
+	    	System.out.println("O que você deseja alterar? ");
+			System.out.println("1-  Email");  
+			System.out.println("2-  Nome");                              
+			System.out.println("3 - Cidade de Nascimento"); 
+			System.out.println("4-  Cidade de Residencia");	
+			System.out.println("5-  Data de Nascimento");
+			System.out.println("9 - Cancelar");
+			System.out.println("0 - Finalizar");
+			
+			int option = scanner.nextInt();
+	
+			switch (option) {	
+			case 1:
+				System.out.println("Digite o novo Email: ");
+				newEmail = scanner.next();
+				break;
+			case 2:
+				System.out.println("Digite o novo Nome: ");
+				newName = scanner.next();
+				break;
+			case 3:
+				System.out.println("Digite a nova Cidade de Nascimento: ");
+				newBirthTown = scanner.next();
+				break;
+			case 4:
+				System.out.println("Digite a nova Cidade de Residencia: ");
+				newLivingTown = scanner.next();
+				break;
+			case 5:
+				System.out.println("Digite a nova Data de Nascimento: ");
+				newBirthDate = scanner.next();
+				break;		
+			case 9:
+				exit = 1;
+				Interface.init();
+				break;
+			case 0:
+				exit = 1;
+				break;
+			default:
+				System.out.println("Por favor, digite uma opcao valida!");
+				break;
+			}
+		}
+    	
         user.update(newName, newEmail, newBirthTown, newLivingTown, newBirthDate);
 	}
     
-    public void deleteUser() throws InterruptedException, ParseException {
+    public void deleteUser() throws InterruptedException, ParseException, SQLException {
     	String email = getEmail();
-    	user = getUser(email);
+    	User user = getUser(email);
 		
     	user.delete();
+	}
+
+    public void deleteFriendship() throws InterruptedException, ParseException, SQLException {
+    	String email = getEmail();
+    	User user = getUser(email);
+		
+    	user.deleteFriendship();
+	}
+    
+    public void createFriendship() throws InterruptedException, ParseException, SQLException {
+    	String email = getEmail();
+    	User user = getUser(email);
+		
+    	user.createFriendship();
+	}
+    
+    public void getFriends() throws InterruptedException, ParseException, SQLException {
+    	String email = getEmail();
+    	User user = getUser(email);
+		
+    	user.getFriends();
 	}
     
     public String getEmail(){
     	System.out.println("Qual o e-mail do usuario que voce deseja selecionar?");
     	Scanner scanner = new Scanner(System.in);
-    	int email = scanner.next();
+    	
+    	String email = scanner.next();
     	
     	if(email != null)
     		return email;
     	else 
-    		//error
+			System.out.println("\n E-mail está nulo, por favor digite um E-mail valido.");
+			return null;
     }
     
-    public User getUser(String email){
-    	PreparedStatement st = conn.prepareStatement("SELECT * FROM pessoas WHERE email = '?'"); //todo MAX 1
-    	st.setInt(1, email);
+    public User getUser(String email) throws SQLException, InterruptedException, ParseException{
+   		Connection c = BDConexao.conectar();
+    	PreparedStatement st = c.prepareStatement("SELECT * FROM pessoas WHERE email = ?"); //todo MAX 1
+    	st.setString(1, email);
     	
     	ResultSet rs = st.executeQuery();
     	while (rs.next())
     	{
     		String name = rs.getString(1);
-    		String email = rs.getString(2);
     		String birthTown = rs.getString(3);
     		String livingTown = rs.getString(4);
-    		String birthDate = rs.getDate(1);
+    		String birthDate = rs.getString(2);
     		
     		User user = new User(email);
     		user.update(name, email, birthTown, livingTown, birthDate);
-    		return User;
+    		return user;
     	}
     	rs.close();
     	st.close();
+		return null;
     }
     
     	

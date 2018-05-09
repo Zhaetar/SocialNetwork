@@ -1,9 +1,9 @@
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.sql.Statement;
-import java.text.DateFormat;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
 
@@ -18,7 +18,7 @@ import java.util.concurrent.TimeUnit;
 public class User { 
    protected String name;
    protected String email;
-   protected Date birthDate;
+   protected String birthDate;
    protected String birthTown;
    protected String livingTown;
   
@@ -26,16 +26,17 @@ public class User {
 	 this.setEmail(email);
     }
    
-   public update(String name, String email, String birthTown, String livingTown, Date birthDate ) {
-	   if(newEmail!="" && newEmail!=null)
+   public void update(String name, String email, String birthTown, String livingTown, String birthDate ) throws InterruptedException, ParseException, SQLException {
+	   String oldEmail = this.email;
+	   if(email!="" && email!=null)
 		   this.setEmail(email);
-	   if(newName!="" && newName!=null)
+	   if(name!="" && name!=null)
 		   this.setName(name);
-	   if(newBirthTown!="" && newBirthTown!=null)
-		   this.setBirthTown(birthDate);
-	   if(newLivingTown!="" && newLivingTown!=null)
+	   if(birthTown!="" && birthTown!=null)
+		   this.setBirthTown(birthTown);
+	   if(livingTown!="" && livingTown!=null)
 		   this.setLivingTown(livingTown);
-	   if(newBirthDate!=null)
+	   if(birthDate!=null)
 		   this.setBirthDate(birthDate);
 
 	   Statement statement = null;
@@ -44,9 +45,9 @@ public class User {
 	   try {
 		   statement = connection.createStatement();
 		   String query;
-		   query = "UPDATE pessoa SET email = " + this.email + "," + "cidadeNasc ='" + this.birthTown + "',"
-					+ "dataNasc ='" + this.birthDate + "'," + "cidadeResidencia="
-					+ this.livingTown + "'," + "nome="+ this.name;
+		   query = "UPDATE pessoas SET email = '" + this.email + "'," + "cidadeNatal ='" + this.birthTown + "',"
+					+ "dataNasc ='" + this.birthDate + "'," + "cidadeAtual='"
+					+ this.livingTown + "'," + "nome='"+ this.name+"' WHERE email = '" + oldEmail +"'";
 		
 		   statement.execute(query);
 		   statement.close();
@@ -60,15 +61,15 @@ public class User {
 		}
     }
    
-   public void insert() throws InterruptedException, ParseException {
+   public void insert() throws InterruptedException, ParseException, SQLException {
 	   Statement statement = null;
 		Connection connection = BDConexao.conectar();
 
 		try {
 			statement = connection.createStatement();
 			String query;
-			query = "INSERT INTO pessoas VALUES("+this.name+","+this.email+","
-					+ ""+this.birthDate+","+this.birthTown+","+this.livingTown+");";
+			query = "INSERT INTO pessoas VALUES('"+this.name+"','"+this.email+"','"
+					+ ""+this.birthDate+"','"+this.birthTown+"','"+this.livingTown+"');";
 
 			statement.execute(query);
 			statement.close();
@@ -81,15 +82,13 @@ public class User {
 			Interface.init();
 		}
    }
-   
-   
 
-   public void delete() throws InterruptedException {
+   public void delete() throws InterruptedException, SQLException {
 		Statement statement = null;
 		Connection connection = BDConexao.conectar();
 		try {
 			statement = connection.createStatement();
-			String query = "DELETE FROM pessoas WHERE " + "email = " + this.email + "";
+			String query = "DELETE FROM pessoas WHERE " + "email = '" + this.email + "'";
 			statement.execute(query);
 			statement.close();
 			connection.close();
@@ -107,14 +106,15 @@ public class User {
 		}
    	}
    
-   public void createFriendship() throws InterruptedException, ParseException {
+   public void createFriendship() throws InterruptedException, ParseException, SQLException {
 	   Scanner scanner = new Scanner(System.in);
 	   System.out.println("Digite o email do amigo: ");
 	   String friendEmail = scanner.next();
 	   Statement statement = null;
 	   Connection connection = BDConexao.conectar();
-	   if(friendEmail == "") {
-		   //todo error
+	   if(friendEmail == "" || friendEmail == this.email) {
+		  System.out.println("Erro ao adicionar amigo!");
+		  Interface.init();
 	   }
 	try {
 		statement = connection.createStatement();
@@ -122,11 +122,12 @@ public class User {
 		//Cria data atual para colocar na amizade
 		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd");
 		LocalDate localDate = LocalDate.now(); 
-		query = "INSERT INTO amigos VALUES("+this.email+", "+friendEmail+","+dtf.format(localDate)+");"; //to-do consertar a data
+		query = "INSERT INTO amigos VALUES('"+this.email+"', '"+friendEmail+"',"+dtf.format(localDate)+");"; //to-do consertar a data
 		statement.execute(query);
 		statement.close();
 		connection.close();
 		System.out.println("Amigo adicionado com sucesso!");
+		Interface.init();
 	} catch (Exception e) {
 		System.out.println(e);
 		System.out.println("\nErro ao adicionar amigo! Voltando ao menu..");
@@ -135,14 +136,14 @@ public class User {
 		}
    }
    
-   public void deleteFriendship() throws InterruptedException, ParseException {
+   public void deleteFriendship() throws InterruptedException, ParseException, SQLException {
 	   Scanner scanner = new Scanner(System.in);
 	   System.out.println("Digite o email do amigo a ser deletado: ");
 	   String friendEmail = scanner.next();
 	   Statement statement = null;
 	   Connection connection = BDConexao.conectar();
 	   if(friendEmail == "") {
-		   //todo error
+		System.out.println("\n E-mail está nulo, por favor digite um E-mail valido.");
 	   }
 	try {
 		statement = connection.createStatement();
@@ -160,7 +161,7 @@ public class User {
 		}
    }
    
-   public void buscarAmigos() throws InterruptedException {
+   public void getFriends() throws InterruptedException, SQLException {
    		Statement stmt = null;
    		Connection c = BDConexao.conectar();
    		try {
@@ -216,11 +217,11 @@ public class User {
        this.livingTown = livingTown;
    }
    
-   public Date getBirthDate() {
+   public String getBirthDate() {
        return birthDate;
    }
    
-   public void setBirthDate(Date birthDate) {
+   public void setBirthDate(String birthDate) {
        this.birthDate = birthDate;
    }
    
