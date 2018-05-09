@@ -151,6 +151,8 @@ public class SocialNetwork {
     	}
     	rs.close();
     	st.close();
+    	System.out.println("Email incorreto! Voltando ao menu.");
+		Interface.init();
 		return null;
     }
     

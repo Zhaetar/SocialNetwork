@@ -1,4 +1,6 @@
 import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.ParseException;
@@ -53,6 +55,7 @@ public class User {
 		   statement.close();
 		   connection.close();
 		   System.out.println("Pessoa alterada com sucesso!");
+		   
 		} catch (Exception e) {
 				System.out.println(e);
 				System.out.println("\nErro ao alterar dados do usuario! Voltando ao menu..");
@@ -75,6 +78,7 @@ public class User {
 			statement.close();
 			connection.close();
 			System.out.println("Pessoa criada com sucesso!");
+			
 		} catch (Exception e) {
 			System.out.println(e);
 			System.out
@@ -88,11 +92,20 @@ public class User {
 		Connection connection = BDConexao.conectar();
 		try {
 			statement = connection.createStatement();
-			String query = "DELETE FROM pessoas WHERE " + "email = '" + this.email + "'";
+
+			//deleta as amizades
+			String query = "DELETE FROM amigos WHERE amigo1 = '"+this.email+"' OR amigo2 = '"+this.email+"'"; 
 			statement.execute(query);
+			
+			//deleta a pessoa
+			query = "DELETE FROM pessoas WHERE " + "email = '" + this.email + "'";
+			statement.execute(query);
+			
 			statement.close();
 			connection.close();
 			System.out.println("Pessoa removida com sucesso!");
+			Interface.init();
+			
 		} catch (Exception e) {
 			System.out.println(e);
 			System.out
@@ -148,11 +161,12 @@ public class User {
 	try {
 		statement = connection.createStatement();
 		String query;
-		query = "DELETE FROM amigos WHERE amigo1 = '"+this.email+"' AND amigo2 = '"+friendEmail+"');"; 
+		query = "DELETE FROM amigos WHERE amigo1 = '"+this.email+"' AND amigo2 = '"+friendEmail+"'"; 
 		statement.execute(query);
 		statement.close();
 		connection.close();
 		System.out.println("Amigo deletado com sucesso!");
+		Interface.init();
 	} catch (Exception e) {
 		System.out.println(e);
 		System.out.println("\nErro ao deletar o amigo! Voltando ao menu..");
@@ -161,28 +175,23 @@ public class User {
 		}
    }
    
-   public void getFriends() throws InterruptedException, SQLException {
-   		Statement stmt = null;
-   		Connection c = BDConexao.conectar();
-   		try {
-   			stmt = c.createStatement();		
-   			String query = "SELECT * "
-		   					+ "FROM amigos "
-		   					+ "WHERE amigo2 IN "
-		   					+ "(SELECT amigo2 from amizades where amigo1 = "+this.email+") ";
-   			stmt.execute(query);
-   			stmt.close();
-   			c.close();			
-   		} catch (Exception e) {
-   			System.out.println(e);
-   			System.out.println("\n Erro ao listar os Amigos! Voltando ao menu..");
-   			TimeUnit.SECONDS.sleep(1);
-   			try {
-   				Interface.init();
-   			} catch (ParseException e1) {
-   				e1.printStackTrace();
-   			}
-   		}
+   
+   public void getFriends() throws SQLException, InterruptedException, ParseException {
+  	Connection c = BDConexao.conectar();
+   	PreparedStatement st = c.prepareStatement("SELECT P.nome FROM amigos A "
+   			+ "INNER JOIN pessoas P ON A.amigo2 = P.email "
+   			+ "WHERE A.amigo2 IN "
+   			+ "(SELECT amigo2 FROM amigos WHERE amigo1 = '"+this.email+"')"); //todo MAX 1
+   	
+   	ResultSet rs = st.executeQuery();
+   	System.out.println("Amigos do usuario com e-mail ("+this.email+"): \n");
+   	while (rs.next())
+   	{
+   		System.out.println(rs.getString(1));
+   	}
+   	rs.close();
+   	st.close();
+   	Interface.init();
    }
 
    public String getName() {
