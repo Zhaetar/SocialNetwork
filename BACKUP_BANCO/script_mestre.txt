@@ -1,0 +1,20 @@
+CASO O BACKUP NÃO FUNCIONE, AQUI TEM UM SCRIPT MESTRE DO BANCO DE DADOS
+
+CREATE DATABASE redesocial;
+
+CREATE TABLE PESSOAS
+(
+  nome character varying(30),
+  email character varying(30) UNIQUE NOT NULL DELETE CASCADE,
+  datanasc character varying(30),
+  cidadeNatal character varying(30),
+  cidadeAtual character varying(30),
+  CONSTRAINT pessoas_pkey PRIMARY KEY (email)
+);
+
+CREATE TABLE AMIGOS
+(
+amigo1 character varying(30) NOT NULL REFERENCES pessoas(email) ,
+amigo2 character varying(30) NOT NULL REFERENCES pessoas(email) ,
+dataAmizade character varying(30)
+);
